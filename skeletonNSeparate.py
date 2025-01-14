@@ -69,10 +69,10 @@ def skeleton_to_graph(skeleton):
 
 def split_branches_by_angle(graph, skeleton, angle_threshold):
     branches = []
-    visited = set()
+    visited_edges = set()
 
     def is_junction(node):
-        return len(list(graph.neighbors(node))) > 2
+        return len(list(graph.neighbors(node))) > 4
 
     def compute_angle(v1, v2):
         norm_v1 = np.linalg.norm(v1)
@@ -80,33 +80,43 @@ def split_branches_by_angle(graph, skeleton, angle_threshold):
         if norm_v1 == 0 or norm_v2 == 0:
             return 0.0
         cos_theta = np.dot(v1, v2) / (norm_v1 * norm_v2)
+        #print(np.degrees(np.arccos(np.clip(cos_theta, -1.0, 1.0))))
         return np.degrees(np.arccos(np.clip(cos_theta, -1.0, 1.0)))
 
     for node in graph.nodes:
-        if node in visited or is_junction(node):
+        neighbors = list(graph.neighbors(node))
+        if len(neighbors) == 0:
             continue
 
-        branch = []
-        queue = [node]
-        while queue:
-            current = queue.pop()
-            if current in visited or is_junction(current):
-                break
+        for neighbor in neighbors:
+            edge = (node, neighbor)
+            if edge in visited_edges:
+                continue
 
-            branch.append(current)
-            visited.add(current)
+            branch = [node]
+            queue = [neighbor]
+            visited_edges.add(edge)
+            visited_edges.add((neighbor, node))
 
-            neighbors = list(graph.neighbors(current))
-            for neighbor in neighbors:
-                if neighbor not in visited:
-                    vector1 = np.array(current) - np.array(neighbor)
-                    if branch:
-                        vector2 = np.array(branch[-1]) - np.array(current)
-                        if compute_angle(vector1, vector2) > angle_threshold:
-                            break
-                    queue.append(neighbor)
-        if branch:
-            branches.append(branch)
+            while queue:
+                current = queue.pop()
+                branch.append(current)
+
+                for next_neighbor in graph.neighbors(current):
+                    next_edge = (current, next_neighbor)
+                    if next_edge in visited_edges:
+                        continue
+
+                    vector1 = np.array(current) - np.array(node)
+                    vector2 = np.array(next_neighbor) - np.array(current)
+
+                    if compute_angle(vector1, vector2) <= angle_threshold:
+                        visited_edges.add(next_edge)
+                        visited_edges.add((next_neighbor, current))
+                        queue.append(next_neighbor)
+
+            if len(branch) > 1: 
+                branches.append(branch)
 
     return branches
 
