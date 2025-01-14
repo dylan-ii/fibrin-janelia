@@ -54,7 +54,7 @@ def filter_skeleton_by_size(skeleton, min_size):
     filtered_skeleton = np.isin(labeled_skeleton, list(valid_labels)).astype(np.bool_)
     return filtered_skeleton
 
-def skeleton_to_graph(skeleton):
+def skeleton_to_graph(skeleton): # change implementation to knn or radius
     nz = np.argwhere(skeleton)
     tree = cKDTree(nz)
     neighbors = tree.query_ball_point(nz, r=1.5)  # r=1.5 ensures adjacency
