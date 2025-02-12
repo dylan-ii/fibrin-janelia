@@ -7,41 +7,34 @@ from skimage.io import imread
 import glob
 
 def analyze_connected_components(directory_path, min_size, skeletonize_min_size=2):
-    # Lists to store results
     num_segments = []
     avg_segment_sizes = []
     all_fiber_lengths = []
     
-    # Load all .tif files from the directory in sorted order
     file_list = sorted(glob.glob(os.path.join(directory_path, "*.tif")))
     
     for i, file_path in enumerate(file_list):
-        if i%10 != 0:  # Adjust the interval as needed
+        if i%10 != 0:
             continue
 
         print(f"Processing Timepoint {i+1}/{len(file_list)}: File '{os.path.basename(file_path)}'")
 
-        # Load the 3D volume data
         volume = imread(file_path)
         print(f"Loaded volume shape: {volume.shape}, unique values: {np.unique(volume)}")
         
-        # Remove small objects
         cleaned_volume = remove_small_objects(volume, min_size=skeletonize_min_size)
         print(f"Cleaned volume shape: {cleaned_volume.shape}, unique values: {np.unique(cleaned_volume)}")
         
         skeleton = skeletonize_3d(cleaned_volume)
 
-        # Label connected components
         labeled_volume = measure.label(skeleton, connectivity=1)
         print(f"Labeled volume shape: {labeled_volume.shape}, "
               f"Number of unique labels: {len(np.unique(labeled_volume))}")
         
-        # Count segment sizes
         segment_sizes = np.bincount(labeled_volume.ravel())
         print(f"Segment sizes (including background): {segment_sizes}")
         
 
-        # Filter out background and small segments
         valid_labels = np.where(segment_sizes >= min_size)
         #valid_labels = valid_labels[valid_labels != 0]  # Exclude background
         num_segments_current = len(valid_labels)
@@ -84,7 +77,6 @@ def analyze_connected_components(directory_path, min_size, skeletonize_min_size=
         max_fiber_length = max(fiber_lengths) if fiber_lengths else 0
         plt.axvline(x=max_fiber_length, color='red', linestyle='dashed', linewidth=2)
         
-        # Annotate the maximum fiber length
         plt.text(
             max_fiber_length, 1, f'Max: {max_fiber_length}', 
             color='red', verticalalignment='bottom', horizontalalignment='right', 
@@ -97,7 +89,6 @@ def analyze_connected_components(directory_path, min_size, skeletonize_min_size=
         plt.grid(True)
         plt.show()
         
-        # Store results
         num_segments.append(num_segments_current)
         avg_segment_sizes.append(avg_segment_size_current)
         all_fiber_lengths.append(fiber_lengths)
