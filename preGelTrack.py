@@ -264,6 +264,17 @@ def track_fibers(labeled_volumes, config=TrackingConfig()):
             pbar.set_postfix_str(f"Tracks: {len(all_tracks)}")
 
     # plot for drop events
+    if dropped_frames:
+        plt.figure(figsize=(10,6))
+        plt.hist(dropped_frames, bins=np.arange(-0.5, len(labeled_volumes)+0.5, 1), 
+                 edgecolor='black', density=True)
+        plt.xlabel('Frame Number')
+        plt.ylabel('Probability Density')
+        plt.title('Distribution of Track Drop Events')
+        plt.savefig('track_drop_distribution.png')
+        plt.close()
+
+    # plot for drop recovery events
     if recovery_events:
         frames = sorted(recovery_events.keys())
         counts = [recovery_events[frame] for frame in frames]
