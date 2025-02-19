@@ -1,3 +1,6 @@
+# to do: replace current scoring with scipy n-wasserstein dist 
+# added comments for aravind to use to run
+
 import time
 import gc
 import os
