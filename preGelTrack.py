@@ -46,7 +46,7 @@ class TrackingConfig:
         self.min_orient_sim = 0 # minimum dot for orientation
 
         # video visualization parameters
-        self.num_visualize = 15000
+        self.num_visualize = 15000 # no longer in use
         self.fps = 5
         self.output_path = "tracked_fibers.mp4"
 
