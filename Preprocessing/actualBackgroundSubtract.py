@@ -5,12 +5,11 @@ import tifffile as tiff
 import cv2
 import concurrent.futures
 
-input_directory = "Experiment15Data/"  # Adjust this to be your raw tif directory
-output_directory = "Experiment15Background/"  # Replace with your output directory
+input_directory = "Experiment15Data/"  # adjust this to be your raw tif directory
+output_directory = "Experiment15Background/"  # replace with your output directory
 
-gausRadius = 30 # Adjust this to blur radius
-
-max_workers = 4 # Number of cores on CPU - 2, probably leave at 4 unless you have a better processor
+gausRadius = 30 # adjust this to blur radius
+max_workers = 4 # num cores on CPU - 2
 
 def process_image(input_path, output_path, sigma):
     volume = tiff.imread(input_path)
